@@ -9,5 +9,5 @@ fn main() -> ! {
     let frequency: u32 = 276;
     defmt::println!("FREQUENCY: {0=0..7}, MAP: {0=8..9}", frequency);
 
-    embedded_db::exit()
+    embedded_db::idle_forever()
 }

@@ -13,5 +13,5 @@ fn main() -> ! {
     defmt::debug!("debug");
     defmt::error!("error");
 
-    embedded_db::exit()
+    embedded_db::idle_forever()
 }

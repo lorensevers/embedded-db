@@ -6,7 +6,7 @@ use embedded_db as _; // global logger + panicking-behavior + memory layout
 #[cortex_m_rt::entry]
 fn main() -> ! {
     ack(10, 10);
-    embedded_db::exit()
+    embedded_db::idle_forever()
 }
 
 fn ack(m: u32, n: u32) -> u32 {

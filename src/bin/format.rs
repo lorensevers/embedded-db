@@ -1,8 +1,8 @@
 #![no_main]
 #![no_std]
 
-use embedded_db as _; // global logger + panicking-behavior + memory layout
-use defmt::Format; // <- derive attribute
+use defmt::Format;
+use embedded_db as _; // global logger + panicking-behavior + memory layout // <- derive attribute
 
 #[derive(Format)]
 struct S1<T> {
@@ -25,5 +25,5 @@ fn main() -> ! {
     let x = 42;
     defmt::println!("x={=u8}", x);
 
-    embedded_db::exit()
+    embedded_db::idle_forever()
 }

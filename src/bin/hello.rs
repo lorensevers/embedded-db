@@ -7,5 +7,5 @@ use embedded_db as _; // global logger + panicking-behavior + memory layout
 fn main() -> ! {
     defmt::println!("Hello, world!");
 
-    embedded_db::exit()
+    embedded_db::idle_forever()
 }
