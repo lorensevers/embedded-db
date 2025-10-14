@@ -1,5 +1,8 @@
 #![no_main]
 #![no_std]
+pub mod codec;
+pub mod db;
+pub mod kv;
 
 use defmt_rtt as _; // global logger
 
