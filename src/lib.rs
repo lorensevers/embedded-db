@@ -1,24 +1,25 @@
 #![no_main]
 #![no_std]
+
 pub mod codec;
 pub mod db;
 pub mod kv;
 
-use defmt_rtt as _; // global logger
+use defmt_rtt as _;
 
-use nrf52840_hal as _; // memory layout
+// I'm building this for the nRF52840 board - similar to the nRF52840 DK
+// https://docs.nordicsemi.com/bundle/ncs-latest/page/zephyr/boards/nordic/nrf52840dk/doc/index.html
+
+use nrf52840_hal as _;
 use panic_probe as _;
 
-// same panicking *behavior* as `panic-probe` but doesn't print a panic message
-// this prevents the panic message being printed *twice* when `defmt::panic` is invoked
+// Panic handler - just trigger a UDF so it won't print a panic message
+// We are using no_std, so we can't use the default panic handler
 #[defmt::panic_handler]
 fn panic() -> ! {
     cortex_m::asm::udf()
 }
 
-// defmt-test 0.3.0 has the limitation that this `#[tests]` attribute can only be used
-// once within a crate. the module can be in any file but there can only be at most
-// one `#[tests]` module in this library crate
 #[cfg(test)]
 #[defmt_test::tests]
 mod unit_tests {
@@ -30,6 +31,9 @@ mod unit_tests {
     }
 }
 
+// This should run forever to keep the board on
+// The cortex_m::asm::wfi() should keep the CPU in low power mode
+// until an interrupt like a button press
 pub fn idle_forever() -> ! {
     loop {
         cortex_m::asm::wfi()
