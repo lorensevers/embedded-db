@@ -3,6 +3,7 @@
 
 pub mod codec;
 pub mod db;
+pub mod flash;
 pub mod kv;
 
 use defmt_rtt as _;
