@@ -7,14 +7,20 @@ use embedded_db::{codec::Codec, db::Database, flash::FlashStorage};
 use hal::pac;
 use nrf52840_hal as hal;
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum EmbeddedError {
+    BufferTooSmall,
+    Other,
+}
+
 pub struct U32Codec;
 
 impl Codec<u32> for U32Codec {
-    type Error = ();
+    type Error = EmbeddedError;
 
     fn encode(buffer: &mut [u8], val: &u32) -> Result<usize, Self::Error> {
         if buffer.len() < 4 {
-            return Err(());
+            return Err(EmbeddedError::BufferTooSmall);
         }
         buffer[..4].copy_from_slice(&val.to_le_bytes());
         Ok(4)
@@ -22,7 +28,7 @@ impl Codec<u32> for U32Codec {
 
     fn decode(buffer: &[u8]) -> Result<u32, Self::Error> {
         if buffer.len() < 4 {
-            return Err(());
+            return Err(EmbeddedError::Other);
         }
         Ok(u32::from_le_bytes([
             buffer[0], buffer[1], buffer[2], buffer[3],
