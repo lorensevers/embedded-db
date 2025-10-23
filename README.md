@@ -1,4 +1,8 @@
-# `app-template`
+# Embedded DB Readme
+
+# Template Readme
+
+## `app-template`
 
 > Quickly set up a [`probe-rs`] + [`defmt`] + [`flip-link`] embedded project
 

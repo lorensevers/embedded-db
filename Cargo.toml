@@ -41,6 +41,11 @@ name = "panic"
 path = "src/bin/panic.rs"
 test = false
 
+[[bin]]
+name = "flash_demo"
+path = "src/bin/flash_demo.rs"
+test = false
+
 [lib]
 harness = false
 
@@ -55,13 +60,14 @@ cortex-m-rt = "0.7"
 defmt = "0.3"
 defmt-rtt = "0.4"
 panic-probe = { version = "0.3", features = ["print-defmt"] }
-nrf52840-hal = {version = "0.18.0", features = ["rt"]}
+nrf52840-hal = { version = "0.18.0", features = ["rt"] }
 heapless = "0.9.1"
 embedded-storage = "0.3.1"
-serde = {version = "1.0.228", default-features = false, features = ["derive"]}
+sequential-storage = "5.0.1"
+serde = { version = "1.0.228", default-features = false, features = ["derive"] }
 serde-json-core = "0.6.0"
 postcard = "1.1.3"
-crc = {version = "3.3.0", default-features = false}
+crc = { version = "3.3.0", default-features = false }
 
 [dev-dependencies]
 defmt-test = "0.3"
