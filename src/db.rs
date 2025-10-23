@@ -108,7 +108,12 @@ where
     ///
     /// flash_offset: The offset in flash where to write (must be aligned)
     /// flash: The flash storage device
-    pub fn save_to_flash<F>(&self, flash: &mut F, flash_offset: u32) -> Result<(), FlashError>
+    pub fn save_to_flash<F>(
+        &self,
+        flash: &mut F,
+        flash_size: usize,
+        flash_offset: u32,
+    ) -> Result<(), FlashError>
     where
         F: NorFlash,
         K: serde::Serialize,
@@ -119,14 +124,14 @@ where
 
         // Write number of entries
         let num_entries = self.len() as u32;
-        buffer[pos..pos + 4].copy_from_slice(&num_entries.to_le_bytes());
-        pos += 4;
+        buffer[pos..pos + flash_size].copy_from_slice(&num_entries.to_le_bytes());
+        pos += flash_size;
 
         // Iterate through all entries and serialize them
         for (key, blob) in self.blobs.iter() {
             // Serialize the key
             // using postcard because it is a compact format
-            let key_bytes = postcard::to_slice(key, &mut buffer[pos + 4..])
+            let key_bytes = postcard::to_slice(key, &mut buffer[pos + flash_size..])
                 .map_err(|_| FlashError::SerializationError)?;
             let key_len = key_bytes.len() as u32;
 

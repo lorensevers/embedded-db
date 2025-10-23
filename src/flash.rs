@@ -14,17 +14,25 @@ use nrf52840_hal::pac::NVMC;
 /// https://docs.nordicsemi.com/bundle/ps_nrf52840/page/memory.html
 /// Pages go from 0 - 255 (256 pages * 4KB = 1MB)
 pub const PAGE_SIZE: usize = 4096;
-
+pub const WRITE_ALIGNMENT: u32 = 4;
 pub struct FlashStorage {
     nvmc: NVMC,
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct FlashError;
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FlashError {
+    OutOfBounds,
+    Unaligned,
+    Other,
+}
 
 impl NorFlashError for FlashError {
     fn kind(&self) -> NorFlashErrorKind {
-        NorFlashErrorKind::Other
+        match self {
+            FlashError::OutOfBounds => NorFlashErrorKind::OutOfBounds,
+            FlashError::Unaligned => NorFlashErrorKind::NotAligned,
+            FlashError::Other => NorFlashErrorKind::Other,
+        }
     }
 }
 
@@ -39,7 +47,7 @@ impl FlashStorage {
     fn erase_page(&mut self, page_addr: u32) -> Result<(), FlashError> {
         // Page address must start on a page boundary
         if page_addr % PAGE_SIZE as u32 != 0 {
-            return Err(FlashError);
+            return Err(FlashError::OutOfBounds);
         }
 
         self.nvmc.config.write(|w| w.wen().een());
@@ -63,8 +71,8 @@ impl FlashStorage {
     /// Write data to flash
     /// Offset must be word-aligned (4 bytes) and the flash must be erased first
     fn write_bytes(&mut self, offset: u32, data: &[u8]) -> Result<(), FlashError> {
-        if offset % 4 != 0 {
-            return Err(FlashError);
+        if offset % WRITE_ALIGNMENT != 0 {
+            return Err(FlashError::OutOfBounds);
         }
 
         // Enable write
@@ -101,7 +109,11 @@ impl FlashStorage {
         // Handle remaining bytes (pad with 0xFF)
         if word_offset < data.len() {
             let mut word = 0xFFFFFFFF;
-            for i in 0..(data.len() - word_offset) {
+
+            let position = data.len() - word_offset;
+
+            assert!(position < 4);
+            for i in 0..(position) {
                 let shift = i * 8;
                 word = (word & !(0xFF << shift)) | ((data[word_offset + i] as u32) << shift);
             }
@@ -160,7 +172,7 @@ impl NorFlash for FlashStorage {
     // Same as read function above, we are just calling the erase_page function to satisfy the NorFlash trait
     fn erase(&mut self, from: u32, to: u32) -> Result<(), Self::Error> {
         if from % PAGE_SIZE as u32 != 0 || to % PAGE_SIZE as u32 != 0 {
-            return Err(FlashError);
+            return Err(FlashError::Other);
         }
 
         for page_addr in (from..to).step_by(PAGE_SIZE) {
